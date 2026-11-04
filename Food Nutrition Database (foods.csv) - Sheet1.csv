@@ -1,0 +1,9 @@
+food_id,name,category,serving_size,calories,protein_g,carbs_g,fats_g,fiber_g,calcium_mg,vitamin_d_iu,iron_mg,vitamin_c_mg,budget_tier,diet_type,allergens
+101,Oats with Milk,Breakfast,1 bowl (250g),220,10.5,34.0,4.5,4.0,240,40,1.8,0.0,Low,Veg,Dairy
+102,Boiled Eggs (2 pcs),Breakfast,2 eggs (100g),155,12.6,1.1,10.6,0.0,50,82,1.2,0.0,Low,Non-Veg,None
+103,Moong Dal (Cooked),Main Course,1 bowl (200g),180,12.0,28.0,2.5,6.5,45,0,2.5,2.0,Low,Vegan,None
+104,Whole Wheat Roti,Main Course,1 piece (40g),104,3.1,22.0,0.5,2.8,15,0,0.9,0.0,Low,Vegan,Gluten
+105,Paneer Tikka,Main Course,100g,260,18.0,6.0,18.0,1.0,480,12,0.4,4.0,Medium,Veg,Dairy
+106,Spinach Tomato Salad,Snack,150g,45,3.0,7.0,0.5,3.2,120,0,3.1,28.0,Low,Vegan,None
+107,Taco Bell Soft Chicken Taco,Fast Food,1 taco (120g),170,12.0,16.0,6.0,2.0,80,0,1.1,1.5,Medium,Non-Veg,Gluten
+108,Almonds,Snack,1 handful (30g),170,6.0,6.0,14.0,3.5,75,0,1.0,0.0,High,Vegan,Nuts
