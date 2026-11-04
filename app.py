@@ -5,7 +5,7 @@ import os
 st.title("🥗 Smart AI Diet & Grocery Planner")
 st.write("Class 12 AI Annual Practical Project (SDG 3 & SDG 12)")
 
-# --- 0. EXPANDED DATASET WITH RAW INGREDIENTS ---
+# --- 0. DATASET SETUP ---
 csv_filename = 'foods.csv'
 
 if not os.path.exists(csv_filename):
@@ -34,13 +34,6 @@ if not os.path.exists(csv_filename):
         ],
         'calories': [220, 155, 180, 104, 260, 45, 170, 170, 250, 190, 210, 420, 550, 400, 480, 120, 280, 160, 520, 240],
         'protein_g': [10.5, 12.6, 12.0, 3.1, 18.0, 3.0, 12.0, 6.0, 8.0, 4.0, 14.0, 10.0, 14.0, 12.0, 24.0, 8.0, 6.0, 12.0, 14.0, 7.0],
-        'carbs_g': [34.0, 1.1, 28.0, 22.0, 6.0, 7.0, 16.0, 6.0, 42.0, 32.0, 2.0, 54.0, 68.0, 65.0, 52.0, 18.0, 30.0, 14.0, 64.0, 38.0],
-        'fats_g': [4.5, 10.6, 2.5, 0.5, 18.0, 0.5, 6.0, 14.0, 4.0, 5.0, 16.0, 18.0, 24.0, 10.0, 18.0, 2.0, 14.0, 5.0, 22.0, 6.0],
-        'fiber_g': [4.0, 0.0, 6.5, 2.8, 1.0, 3.2, 2.0, 3.5, 3.0, 3.5, 0.5, 4.5, 8.0, 9.0, 3.0, 5.0, 5.5, 1.0, 7.0, 6.0],
-        'calcium_mg': [240, 50, 45, 15, 480, 120, 80, 75, 300, 30, 60, 220, 90, 60, 50, 60, 20, 200, 180, 40],
-        'vitamin_d_iu': [40, 82, 0, 0, 12, 0, 0, 0, 100, 0, 88, 30, 0, 0, 15, 0, 0, 20, 25, 0],
-        'iron_mg': [1.8, 1.2, 2.5, 0.9, 0.4, 3.1, 1.1, 1.0, 0.8, 2.0, 1.5, 2.2, 4.0, 4.5, 2.5, 2.0, 0.5, 0.2, 3.0, 2.2],
-        'vitamin_c_mg': [0.0, 0.0, 2.0, 0.0, 4.0, 28.0, 1.5, 0.0, 5.0, 4.0, 1.0, 2.0, 6.0, 3.0, 4.0, 12.0, 8.0, 1.0, 3.0, 4.0],
         'budget_tier': ['Low', 'Low', 'Low', 'Low', 'Medium', 'Low', 'Medium', 'High', 'Low', 'Low', 'Low', 'Medium', 'Medium', 'Low', 'Medium', 'Low', 'Medium', 'Medium', 'Medium', 'Low'],
         'diet_type': ['Veg', 'Non-Veg', 'Vegan', 'Vegan', 'Veg', 'Vegan', 'Non-Veg', 'Vegan', 'Veg', 'Veg', 'Non-Veg', 'Veg', 'Veg', 'Veg', 'Non-Veg', 'Vegan', 'Veg', 'Veg', 'Veg', 'Vegan'],
         'allergens': ['Dairy', 'None', 'None', 'Gluten', 'Dairy', 'None', 'Gluten', 'Nuts', 'Dairy', 'None', 'None', 'Gluten, Dairy', 'Gluten', 'None', 'Dairy', 'None', 'Nuts', 'Dairy', 'Dairy', 'None'],
@@ -76,28 +69,16 @@ age = st.sidebar.slider("Age", 10, 80, 18)
 gender = st.sidebar.selectbox("Gender", ["Male", "Female"])
 weight = st.sidebar.number_input("Weight (kg)", value=65.0)
 height = st.sidebar.number_input("Height (cm)", value=175.0)
-activity = st.sidebar.selectbox("Work / Activity Intensity", 
-                                ["Sedentary (Little/no exercise)", 
-                                 "Lightly Active (Light exercise/study)", 
-                                 "Moderately Active (Daily exercise)"])
-
+activity = st.sidebar.selectbox("Activity Level", ["Sedentary", "Lightly Active", "Moderately Active"])
 diet_type = st.sidebar.selectbox("Dietary Preference", ["Veg", "Non-Veg", "Vegan"])
 budget = st.sidebar.selectbox("Budget Tier", ["Low", "Medium", "High"])
 allergy = st.sidebar.selectbox("Allergy Restriction", ["None", "Dairy", "Gluten", "Nuts"])
 party_mode = st.sidebar.checkbox("🎉 Attending a Party / Eating Out Today?")
 
 # --- 2. CALORIE ENGINE ---
-if "Sedentary" in activity:
-    mult = 1.2
-elif "Lightly" in activity:
-    mult = 1.375
-else:
-    mult = 1.55
-
+mult = 1.2 if "Sedentary" in activity else (1.375 if "Lightly" in activity else 1.55)
 bmr = (10 * weight) + (6.25 * height) - (5 * age) + (5 if gender == "Male" else -161)
-tdee = bmr * mult
-if party_mode:
-    tdee += 300
+tdee = (bmr * mult) + (300 if party_mode else 0)
 
 st.subheader("📊 Your Daily Nutritional Targets")
 col1, col2, col3 = st.columns(3)
@@ -105,10 +86,9 @@ col1.metric("Daily Calorie Target", f"{tdee:.0f} kcal")
 col2.metric("Target Protein", f"{(weight * 1.2):.1f} g")
 col3.metric("Estimated Water", "3.0 Liters")
 
-# --- 3. FLEXIBLE FILTERING (Ensures list is never empty) ---
+# --- 3. FILTER MEALS ---
 df = pd.read_csv(csv_filename)
 
-# Filter by diet type (Veg users can eat Vegan food too)
 if diet_type == "Veg":
     valid_foods = df[df['diet_type'].isin(['Veg', 'Vegan'])]
 elif diet_type == "Vegan":
@@ -116,11 +96,9 @@ elif diet_type == "Vegan":
 else:
     valid_foods = df.copy()
 
-# Filter by allergy safely
 if allergy != "None":
     valid_foods = valid_foods[~valid_foods['allergens'].str.contains(allergy, case=False, na=False)]
 
-# If filters are too restrictive, fallback to full dataset so the app never breaks
 if valid_foods.empty:
     valid_foods = df.copy()
 
@@ -128,17 +106,23 @@ st.markdown("---")
 st.subheader("📅 Your 7-Day Smart Meal Plan Preview")
 st.dataframe(valid_foods[['name', 'category', 'serving_size', 'calories', 'protein_g']])
 
-# --- 4. SMART GROCERY LIST (RAW INGREDIENTS) ---
+# --- 4. SAFE GROCERY LIST GENERATOR ---
 st.markdown("---")
 st.subheader("🛒 Automated Raw Ingredient Grocery List")
-st.write("Here are the **raw grocery items** you need to buy based on your selected meal options:")
 
-raw_list = valid_foods['raw_ingredients'].dropna().tolist()
-unique_ingredients = set()
-for item in raw_list:
-    parts = [p.strip() for p in item.split(',')]
-    for p in parts:
-        unique_ingredients.add(p)
-
-grocery_df = pd.DataFrame(list(unique_ingredients), columns=["Required Grocery Item"])
-st.table(grocery_df)
+try:
+    raw_list = valid_foods['raw_ingredients'].dropna().tolist()
+    unique_ingredients = set()
+    for item in raw_list:
+        for p in str(item).split(','):
+            clean_item = p.strip()
+            if clean_item:
+                unique_ingredients.add(clean_item)
+    
+    if unique_ingredients:
+        grocery_df = pd.DataFrame(sorted(list(unique_ingredients)), columns=["Required Grocery Item"])
+        st.table(grocery_df)
+    else:
+        st.info("No ingredients to display yet.")
+except Exception as e:
+    st.error(f"Error generating grocery list: {e}")
