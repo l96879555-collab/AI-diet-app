@@ -105,36 +105,40 @@ col1.metric("Daily Calorie Target", f"{tdee:.0f} kcal")
 col2.metric("Target Protein", f"{(weight * 1.2):.1f} g")
 col3.metric("Estimated Water", "3.0 Liters")
 
-# --- 3. FILTER MEALS ---
+# --- 3. FLEXIBLE FILTERING (Ensures list is never empty) ---
 df = pd.read_csv(csv_filename)
-valid_foods = df[
-    (df['diet_type'].isin([diet_type, 'Vegan'])) & 
-    (df['budget_tier'] == budget)
-]
+
+# Filter by diet type (Veg users can eat Vegan food too)
+if diet_type == "Veg":
+    valid_foods = df[df['diet_type'].isin(['Veg', 'Vegan'])]
+elif diet_type == "Vegan":
+    valid_foods = df[df['diet_type'] == 'Vegan']
+else:
+    valid_foods = df.copy()
+
+# Filter by allergy safely
 if allergy != "None":
     valid_foods = valid_foods[~valid_foods['allergens'].str.contains(allergy, case=False, na=False)]
 
+# If filters are too restrictive, fallback to full dataset so the app never breaks
+if valid_foods.empty:
+    valid_foods = df.copy()
+
 st.markdown("---")
 st.subheader("📅 Your 7-Day Smart Meal Plan Preview")
-if not valid_foods.empty:
-    st.dataframe(valid_foods[['name', 'category', 'serving_size', 'calories', 'protein_g']])
-else:
-    st.dataframe(df.head(5))
+st.dataframe(valid_foods[['name', 'category', 'serving_size', 'calories', 'protein_g']])
 
 # --- 4. SMART GROCERY LIST (RAW INGREDIENTS) ---
 st.markdown("---")
 st.subheader("🛒 Automated Raw Ingredient Grocery List")
 st.write("Here are the **raw grocery items** you need to buy based on your selected meal options:")
 
-if not valid_foods.empty and 'raw_ingredients' in valid_foods.columns:
-    raw_list = valid_foods['raw_ingredients'].dropna().tolist()
-    unique_ingredients = set()
-    for item in raw_list:
-        parts = [p.strip() for p in item.split(',')]
-        for p in parts:
-            unique_ingredients.add(p)
-    
-    grocery_df = pd.DataFrame(list(unique_ingredients), columns=["Required Grocery Item"])
-    st.table(grocery_df)
-else:
-    st.write("Complete your profile settings above to generate the grocery list.")
+raw_list = valid_foods['raw_ingredients'].dropna().tolist()
+unique_ingredients = set()
+for item in raw_list:
+    parts = [p.strip() for p in item.split(',')]
+    for p in parts:
+        unique_ingredients.add(p)
+
+grocery_df = pd.DataFrame(list(unique_ingredients), columns=["Required Grocery Item"])
+st.table(grocery_df)
