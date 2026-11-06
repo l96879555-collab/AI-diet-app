@@ -3,8 +3,7 @@ import pandas as pd
 import os
 from PIL import Image
 
-# --- THEME STYLING CONFIGURATION ---
-# We use custom CSS injection to dynamically apply dark or light mode based on user choice
+# --- THEME STYLING CONFIGURATION (FIXED FOR FULL SCREEN) ---
 def apply_theme(theme_choice):
     if theme_choice == "Dark Mode (Easy on Eyes)":
         st.markdown("""
@@ -13,7 +12,10 @@ def apply_theme(theme_choice):
                 background-color: #121212;
                 color: #E0E0E0;
             }
-            .sidebar .sidebar-content {
+            section.main > div {
+                background-color: #121212;
+            }
+            [data-testid="stSidebar"] {
                 background-color: #1E1E1E;
             }
             </style>
@@ -24,6 +26,12 @@ def apply_theme(theme_choice):
             .stApp {
                 background-color: #F1F8E9;
                 color: #1B5E20;
+            }
+            section.main > div {
+                background-color: #F1F8E9;
+            }
+            [data-testid="stSidebar"] {
+                background-color: #DCEDC8;
             }
             </style>
         """, unsafe_allow_html=True)
